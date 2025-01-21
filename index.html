@@ -1,0 +1,47 @@
+<!Doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title> Python Web App</title>
+	<script src="pyodide.js"></script>
+</head>
+
+<body>
+	<h1>Python Web App</h1>
+	<p>Enter two numbers to add:</p>1
+	<input type="number" id= "num1" placeholder="Number 1"></input>
+	<input type="number" id= "num2" placeholder="Number 2"></input>
+	<button id="calculate">Calculate</button>
+	<p>Result: <span id="result">-</span></p>
+	
+	<script>
+		async function main(){
+			console.log("Loading Pyodide...")
+			const pyodide = await loadPyodide({
+				indexURL: "./",
+				wasmPath: "pyodide.asm.wasm",
+				fullStdLib: false
+			});
+			console.log("Pyodide loaded.");
+			
+			// Fetch and load the Python script
+			const response = await fetch('logic.py');
+			const pythonScript = await response.text();
+			await pyodide.runPythonAsync(pythonScript);
+			
+			// add an event listener for the button
+			document.getElementById("calculate").addEventListener("click", () => {
+				const num1 = parseFloat(document.getElementById("num1").value);
+				const num2 = parseFloat(document.getElementById("num2").value);
+				
+				// Call Pythons add_numbers function
+				const result = pyodide.runPython(`add_numbers(${num1}, ${num2})`);
+				document.getElementById("result").textContent = result;
+			});
+		}
+		
+		main();
+	</script>
+</body>
+</html>
